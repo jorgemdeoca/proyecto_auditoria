@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class TasaDolar extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasAuditTrail;
+
+    protected string $auditModulo = 'configuracion';
 
     protected $table = 'tasas_dolar';
     protected $primaryKey = 'id';
