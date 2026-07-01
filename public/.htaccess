@@ -6,7 +6,7 @@
     RewriteEngine On
     
     # Ajuste para subdirectorios en localhost
-    RewriteBase /proyecto_auditoria/public/
+    RewriteBase /reservamedica/public/
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
