@@ -9,6 +9,8 @@ class EvolucionClinica extends Model
 {
     use HasFactory, \App\Traits\ScopedByConsultorio, \App\Traits\HasAuditTrail;
 
+    protected string $auditModulo = 'historia_clinica';
+
     protected $table = 'evolucion_clinica';
     protected $primaryKey = 'id';
     protected $fillable = [

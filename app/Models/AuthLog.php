@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuthLog extends Model
 {
-    public $timestamps = false; // Solo created_at
+    public $timestamps = false; // Tabla append-only: solo created_at
     protected $table   = 'auth_logs';
     protected $guarded = [];
 
@@ -14,13 +14,21 @@ class AuthLog extends Model
         'created_at' => 'datetime',
     ];
 
-    // ── Scopes ───────────────────────────────────────────────────────────────
+    // ── Relación ─────────────────────────────────────────────────────────────
 
-    public function scopePorEvento($query, string $eventType)
+    /**
+     * Relación opcional al usuario (puede ser null si el correo no existe).
+     */
+    public function usuario()
     {
-        return $query->where('event_type', $eventType);
+        return $this->belongsTo(Usuario::class, 'user_id');
     }
 
+    // ── Scopes ───────────────────────────────────────────────────────────────
+
+    /**
+     * Filtra por rango de fechas.
+     */
     public function scopeEnRango($query, string $desde, string $hasta)
     {
         return $query->whereBetween('created_at', [
@@ -29,56 +37,59 @@ class AuthLog extends Model
         ]);
     }
 
-    public function scopeSoloFallidos($query)
+    /**
+     * Filtra por tipo de evento (LOGIN_OK, LOGIN_FAIL, LOGOUT, LOCKOUT, UNLOCK).
+     */
+    public function scopePorEvento($query, string $eventType)
     {
-        return $query->where('event_type', 'LOGIN_FAIL');
+        return $query->where('event_type', $eventType);
     }
 
-    public function scopeSoloBloqueos($query)
+    /**
+     * Filtra por usuario específico.
+     */
+    public function scopePorUsuario($query, int $userId)
     {
-        return $query->where('event_type', 'LOCKOUT');
+        return $query->where('user_id', $userId);
     }
 
-    public function scopeRecientes($query, int $dias = 30)
+    /**
+     * Filtra por dirección IP.
+     */
+    public function scopePorIp($query, string $ip)
     {
-        return $query->where('created_at', '>=', now()->subDays($dias));
+        return $query->where('ip_address', $ip);
     }
 
-    // ── Relaciones ────────────────────────────────────────────────────────────
+    // ── Accessors para las vistas Blade ──────────────────────────────────────
 
-    public function usuario()
-    {
-        return $this->belongsTo(Usuario::class, 'user_id');
-    }
-
-    // ── Accessors ─────────────────────────────────────────────────────────────
-
-    public function getBadgeLabelAttribute(): string
-    {
-        return match ($this->event_type) {
-            'LOGIN_OK'   => '✓ Acceso OK',
-            'LOGIN_FAIL' => '✗ Fallido',
-            'LOGOUT'     => '→ Logout',
-            'LOCKOUT'    => '🔒 Bloqueado',
-            'UNLOCK'     => '🔓 Desbloqueado',
-            default      => $this->event_type,
-        };
-    }
-
+    /**
+     * Retorna el color del badge según el tipo de evento.
+     */
     public function getBadgeColorAttribute(): string
     {
-        return match ($this->event_type) {
-            'LOGIN_OK'   => 'emerald',
-            'LOGIN_FAIL' => 'amber',
-            'LOGOUT'     => 'gray',
-            'LOCKOUT'    => 'rose',
-            'UNLOCK'     => 'blue',
-            default      => 'gray',
+        return match($this->event_type) {
+            'LOGIN_OK'   => 'success',
+            'LOGOUT'     => 'secondary',
+            'LOGIN_FAIL' => 'warning',
+            'LOCKOUT'    => 'danger',
+            'UNLOCK'     => 'info',
+            default      => 'secondary',
         };
     }
 
-    public function getEsRiesosoAttribute(): bool
+    /**
+     * Retorna la etiqueta legible del evento.
+     */
+    public function getBadgeLabelAttribute(): string
     {
-        return in_array($this->event_type, ['LOGIN_FAIL', 'LOCKOUT']);
+        return match($this->event_type) {
+            'LOGIN_OK'   => 'Acceso Exitoso',
+            'LOGOUT'     => 'Cierre de Sesión',
+            'LOGIN_FAIL' => 'Intento Fallido',
+            'LOCKOUT'    => 'Cuenta Bloqueada',
+            'UNLOCK'     => 'Cuenta Desbloqueada',
+            default      => $this->event_type,
+        };
     }
 }

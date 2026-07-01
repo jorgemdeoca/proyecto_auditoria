@@ -9,6 +9,8 @@ class FacturaPaciente extends Model
 {
     use HasFactory, \App\Traits\ScopedByConsultorio, \App\Traits\HasAuditTrail;
 
+    protected string $auditModulo = 'pagos';
+
     protected $table = 'facturas_pacientes';
     protected $primaryKey = 'id';
     protected $fillable = [

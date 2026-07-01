@@ -11,21 +11,16 @@ class LogSuccessfulLogin
     {
         try {
             DB::table('auth_logs')->insert([
-                'user_id'    => $event->user->id,
-                'correo'     => $event->user->correo,
-                'event_type' => 'LOGIN_OK',
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'created_at' => now(),
-            ]);
-
-            // Resetear contador de intentos fallidos
-            $event->user->update([
-                'failed_login_count' => 0,
-                'last_failed_at'     => null,
+                'user_id'          => $event->user->id,
+                'correo_intentado' => $event->user->correo,
+                'event_type'       => 'LOGIN_OK',
+                'ip_address'       => request()->ip(),
+                'user_agent'       => substr(request()->userAgent() ?? '', 0, 512),
+                'session_id'       => session()->getId(),
+                'created_at'       => now(),
             ]);
         } catch (\Throwable $e) {
-            \Log::warning('[LogSuccessfulLogin] ' . $e->getMessage());
+            \Log::warning('[AuthLog] Error al registrar LOGIN_OK: ' . $e->getMessage());
         }
     }
 }

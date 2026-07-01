@@ -4,72 +4,69 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response;
 
 class AuditReadAccess
 {
     /**
-     * Registra en read_audit_logs cada vez que un médico accede a una historia clínica.
+     * Registra silenciosamente cuándo alguien visualiza una historia clínica.
+     * Uso en rutas: ->middleware('audit.read:HistoriaClinicaBase,paciente')
      *
-     * Uso en rutas:
-     *   Route::get('/historia/{pacienteId}', ...)->middleware('audit.read:HistoriaClinicaBase');
-     *
-     * El parámetro de la ruta debe tener el ID del paciente o del recurso.
+     * @param  string  $resourceType  Ej: HistoriaClinicaBase, EvolucionClinica
+     * @param  string  $pacienteParam Nombre del parámetro de ruta (ej: 'paciente', 'id')
      */
-    public function handle(Request $request, Closure $next, string $resourceType = 'HistoriaClinicaBase'): Response
+    public function handle(Request $request, Closure $next, string $resourceType, string $pacienteParam = 'paciente')
     {
+        // Primero dejamos que la petición se procese normalmente
         $response = $next($request);
 
-        // Solo registrar accesos exitosos (200-299)
+        // Solo auditamos si la petición fue exitosa (2xx)
         if ($response->isSuccessful()) {
-            $this->registrarAcceso($request, $resourceType);
+            try {
+                $user = auth()->user();
+                $nombreLector = 'Desconocido';
+
+                if ($user) {
+                    $nombreLector = method_exists($user, 'getNombreCompletoAttribute')
+                        ? $user->nombre_completo
+                        : $user->correo;
+                }
+
+                $rolLector = $user?->rol?->nombre ?? '';
+
+                // Extraer el ID del recurso de la ruta
+                $recurso = $request->route($pacienteParam) ?? $request->route('id');
+                $recursoId = is_object($recurso) ? $recurso->getKey() : (int) $recurso;
+
+                // Intentar obtener datos del paciente
+                $pacienteId = $recursoId;
+                $pacienteNombre = null;
+
+                if (is_object($recurso) && isset($recurso->paciente)) {
+                    $pacienteNombre = $recurso->paciente->primer_nombre . ' ' . $recurso->paciente->primer_apellido;
+                    $pacienteId = $recurso->paciente->id;
+                } elseif (is_object($recurso) && method_exists($recurso, 'getPrimerNombreAttribute')) {
+                    $pacienteNombre = $recurso->primer_nombre . ' ' . $recurso->primer_apellido;
+                }
+
+                DB::table('read_audit_logs')->insert([
+                    'reader_id'       => $user?->id ?? 0,
+                    'reader_nombre'   => $nombreLector,
+                    'reader_rol'      => $rolLector,
+                    'resource_type'   => $resourceType,
+                    'resource_id'     => $recursoId,
+                    'paciente_id'     => $pacienteId,
+                    'paciente_nombre' => $pacienteNombre,
+                    'ip_address'      => $request->ip(),
+                    'ruta_accedida'   => $request->route()?->getName(),
+                    'created_at'      => now(),
+                ]);
+            } catch (\Throwable $e) {
+                // Falla silenciosa: la auditoría nunca bloquea al usuario
+                \Log::warning('[AuditReadAccess] Error: ' . $e->getMessage());
+            }
         }
 
         return $response;
-    }
-
-    private function registrarAcceso(Request $request, string $resourceType): void
-    {
-        try {
-            $user   = Auth::user();
-            $params = $request->route()?->parameters() ?? [];
-
-            // Intentar extraer el ID del recurso y el paciente de los parámetros de la ruta
-            $resourceId = $params['id']
-                ?? $params[lcfirst($resourceType)]
-                ?? $params['pacienteId']
-                ?? $params['paciente']
-                ?? 0;
-
-            $pacienteId = $params['pacienteId']
-                ?? $params['paciente_id']
-                ?? $params['paciente']
-                ?? null;
-
-            // Nombre del paciente si lo podemos resolver
-            $pacienteNombre = null;
-            if ($pacienteId) {
-                $paciente = \App\Models\Paciente::find($pacienteId);
-                $pacienteNombre = $paciente?->nombre_completo ?? null;
-            }
-
-            DB::table('read_audit_logs')->insert([
-                'reader_id'       => $user?->id ?? 0,
-                'reader_nombre'   => $user?->nombre_completo ?? 'Desconocido',
-                'reader_rol'      => $user?->rol?->nombre ?? 'medico',
-                'resource_type'   => $resourceType,
-                'resource_id'     => is_numeric($resourceId) ? (int) $resourceId : 0,
-                'paciente_id'     => $pacienteId ? (int) $pacienteId : null,
-                'paciente_nombre' => $pacienteNombre,
-                'ip_address'      => $request->ip(),
-                'ruta_accedida'   => $request->route()?->getName(),
-                'created_at'      => now(),
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('[AuditReadAccess] No se pudo registrar acceso: ' . $e->getMessage());
-        }
     }
 }

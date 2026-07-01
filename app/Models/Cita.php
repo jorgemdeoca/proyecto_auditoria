@@ -9,6 +9,8 @@ class Cita extends Model
 {
     use HasFactory, \App\Traits\ScopedByConsultorio, \App\Traits\HasAuditTrail;
 
+    protected string $auditModulo = 'citas';
+
     protected $table = 'citas';
     protected $primaryKey = 'id';
     protected $fillable = [

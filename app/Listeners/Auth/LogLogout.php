@@ -11,15 +11,16 @@ class LogLogout
     {
         try {
             DB::table('auth_logs')->insert([
-                'user_id'    => $event->user?->id,
-                'correo'     => $event->user?->correo ?? 'desconocido',
-                'event_type' => 'LOGOUT',
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'created_at' => now(),
+                'user_id'          => $event->user?->id,
+                'correo_intentado' => $event->user?->correo ?? '',
+                'event_type'       => 'LOGOUT',
+                'ip_address'       => request()->ip(),
+                'user_agent'       => substr(request()->userAgent() ?? '', 0, 512),
+                'session_id'       => session()->getId(),
+                'created_at'       => now(),
             ]);
         } catch (\Throwable $e) {
-            \Log::warning('[LogLogout] ' . $e->getMessage());
+            \Log::warning('[AuthLog] Error al registrar LOGOUT: ' . $e->getMessage());
         }
     }
 }

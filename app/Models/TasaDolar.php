@@ -9,6 +9,8 @@ class TasaDolar extends Model
 {
     use HasFactory, \App\Traits\HasAuditTrail;
 
+    protected string $auditModulo = 'configuracion';
+
     protected $table = 'tasas_dolar';
     protected $primaryKey = 'id';
     protected $fillable = [

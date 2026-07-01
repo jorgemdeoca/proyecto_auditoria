@@ -14,15 +14,11 @@ class ReadAuditLog extends Model
         'created_at' => 'datetime',
     ];
 
-    // ── Relación ─────────────────────────────────────────────────────────────
-
-    public function lector()
-    {
-        return $this->belongsTo(Usuario::class, 'reader_id');
-    }
-
     // ── Scopes ───────────────────────────────────────────────────────────────
 
+    /**
+     * Filtra por rango de fechas.
+     */
     public function scopeEnRango($query, string $desde, string $hasta)
     {
         return $query->whereBetween('created_at', [
@@ -31,38 +27,27 @@ class ReadAuditLog extends Model
         ]);
     }
 
-    public function scopePorTipo($query, string $resourceType)
-    {
-        return $query->where('resource_type', $resourceType);
-    }
-
+    /**
+     * Filtra por el lector que accedió a la historia.
+     */
     public function scopePorLector($query, int $readerId)
     {
         return $query->where('reader_id', $readerId);
     }
 
+    /**
+     * Filtra por paciente cuya historia fue leída.
+     */
     public function scopePorPaciente($query, int $pacienteId)
     {
         return $query->where('paciente_id', $pacienteId);
     }
 
-    // ── Accessors para las vistas Blade ──────────────────────────────────────
-
-    public function getBadgeColorAttribute(): string
+    /**
+     * Filtra por tipo de recurso accedido (HistoriaClinicaBase, EvolucionClinica).
+     */
+    public function scopePorTipo($query, string $type)
     {
-        return match ($this->resource_type) {
-            'HistoriaClinicaBase' => 'info',
-            'EvolucionClinica'   => 'primary',
-            default              => 'secondary',
-        };
-    }
-
-    public function getTipoLegibleAttribute(): string
-    {
-        return match ($this->resource_type) {
-            'HistoriaClinicaBase' => 'Historia Clínica Base',
-            'EvolucionClinica'   => 'Evolución Clínica',
-            default              => $this->resource_type,
-        };
+        return $query->where('resource_type', $type);
     }
 }
