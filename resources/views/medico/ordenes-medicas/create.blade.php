@@ -155,8 +155,8 @@
                             </select>
                         </div>
                         
-                        @if(request('cita'))
-                        <input type="hidden" name="cita_id" value="{{ request('cita') }}">
+                        @if(request('cita') || request('cita_id'))
+                        <input type="hidden" name="cita_id" value="{{ request('cita_id') ?? request('cita') }}">
                         <div class="md:col-span-2">
                             <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
                                 <p class="text-sm font-semibold text-blue-900">
@@ -620,7 +620,7 @@
 <script>
 function ordenMedicaForm() {
     return {
-        tipoOrden: 'Receta',
+        tipoOrden: '{{ request('tipo_orden', 'Receta') }}',
         
         // Sistema de notificaciones toast
         showToast: false,

@@ -409,8 +409,8 @@
                         </div>
                         <p class="font-bold text-{{ $config['color'] }}-900 text-lg">{{ $config['label'] }}</p>
 
-                        {{-- Botón para marcar como completada (solo para citas Confirmadas) --}}
-                        @if($cita->estado_cita == 'Confirmada')
+                        {{-- Botón para marcar como completada --}}
+                        @if(in_array($cita->estado_cita, ['Programada', 'Confirmada', 'En Progreso']))
                         <form action="{{ route('citas.cambiar-estado', $cita->id) }}" method="POST" class="mt-4">
                             @csrf
                             <input type="hidden" name="estado_cita" value="Completada">

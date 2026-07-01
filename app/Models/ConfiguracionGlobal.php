@@ -9,6 +9,7 @@ class ConfiguracionGlobal extends Model
 {
     use HasFactory;
 
+    protected $table = 'configuracion_global';
     protected $fillable = [
         'clave',
         'valor',

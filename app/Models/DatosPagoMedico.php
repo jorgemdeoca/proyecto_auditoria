@@ -9,23 +9,17 @@ class DatosPagoMedico extends Model
 {
     use HasFactory;
 
+    protected $table = 'datos_pago_medico';
     protected $fillable = [
         'medico_id',
-        'banco_nombre',
-        'cuenta_tipo',
-        'cuenta_numero',
-        'titular_cuenta',
-        'cedula_titular',
-        'pm_operadora',
-        'pm_numero',
-        'pm_cedula',
-        'efectivo_observaciones',
-        'metodos_habilitados',
-        'metodo_preferido',
-        'activo',
-        'verificado',
-        'fecha_verificacion',
-        'notas_internas'
+        'banco',
+        'tipo_cuenta',
+        'numero_cuenta',
+        'titular',
+        'cedula',
+        'metodo_pago_id',
+        'prefijo_tlf',
+        'numero_tlf'
     ];
 
     protected $casts = [

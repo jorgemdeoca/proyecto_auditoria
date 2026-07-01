@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             PreguntasCatalogoTableSeeder::class,
             EspecialidadesTableSeeder::class,
             MetodoPagoTableSeeder::class,
-            ConfiguracionGlobalTableSeeder::class,
+            ConfiguracionGlobalSeeder::class,
             
             // Grupo 2: Dependen de Grupo 1
             CiudadesTableSeeder::class,
