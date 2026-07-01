@@ -291,6 +291,13 @@
                 <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sistema</p>
             </div>
 
+            <a href="{{ route('admin.auditoria.index') }}"
+                class="flex items-center px-3 py-2.5 rounded-lg mb-1 transition-all duration-200 group {{ request()->is('*/admin/auditoria*') ? 'bg-medical-500/20 text-medical-500 ring-1 ring-medical-500/30' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200' }}">
+                <i
+                    class="bi bi-shield-lock-fill text-lg mr-3 {{ request()->is('*/admin/auditoria*') ? 'text-medical-500' : 'text-slate-500 group-hover:text-slate-200' }}"></i>
+                <span class="font-medium text-sm">Auditoría (Seguridad)</span>
+            </a>
+
             <a href="{{ route('facturacion.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group {{ request()->is('*/facturacion*') ? 'bg-medical-500/20 text-medical-500 ring-1 ring-medical-500/30' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200' }}">
                 <i

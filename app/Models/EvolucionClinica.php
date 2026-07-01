@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class EvolucionClinica extends Model
 {
-    use HasFactory, \App\Traits\ScopedByConsultorio;
+    use HasFactory, \App\Traits\ScopedByConsultorio, \App\Traits\HasAuditTrail;
 
     protected $table = 'evolucion_clinica';
     protected $primaryKey = 'id';

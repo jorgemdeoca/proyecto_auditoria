@@ -202,6 +202,24 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [\App\Http\Controllers\Admin\AdminBroadcastController::class, 'store'])->name('admin.broadcast.store');
     });
 
+    // =========================================================================
+    // MÓDULO DE AUDITORÍA Y REPORTES
+    // =========================================================================
+    Route::prefix('admin/auditoria')->middleware('role:admin')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AuditoriaController::class, 'index'])->name('admin.auditoria.index');
+        Route::get('/citas', [\App\Http\Controllers\Admin\AuditoriaController::class, 'citas'])->name('admin.auditoria.citas');
+        Route::get('/pagos', [\App\Http\Controllers\Admin\AuditoriaController::class, 'pagos'])->name('admin.auditoria.pagos');
+        Route::get('/acceso-medico', [\App\Http\Controllers\Admin\AuditoriaController::class, 'accesoMedico'])->name('admin.auditoria.acceso-medico');
+        Route::get('/auth-logs', [\App\Http\Controllers\Admin\AuditoriaController::class, 'authLogs'])->name('admin.auditoria.auth-logs');
+        // Exportaciones Excel
+        Route::get('/exportar/citas/excel', [\App\Http\Controllers\Admin\AuditoriaController::class, 'exportarCitasExcel'])->name('admin.auditoria.exportar.citas.excel');
+        Route::get('/exportar/pagos/excel', [\App\Http\Controllers\Admin\AuditoriaController::class, 'exportarPagosExcel'])->name('admin.auditoria.exportar.pagos.excel');
+        Route::get('/exportar/auth/excel', [\App\Http\Controllers\Admin\AuditoriaController::class, 'exportarAuthExcel'])->name('admin.auditoria.exportar.auth.excel');
+        // Exportaciones PDF
+        Route::get('/exportar/citas/pdf', [\App\Http\Controllers\Admin\AuditoriaController::class, 'exportarCitasPdf'])->name('admin.auditoria.exportar.citas.pdf');
+        Route::get('/exportar/pagos/pdf', [\App\Http\Controllers\Admin\AuditoriaController::class, 'exportarPagosPdf'])->name('admin.auditoria.exportar.pagos.pdf');
+    });
+
     // Rutas Específicas Paciente
     Route::prefix('paciente')->middleware(['auth', 'role:paciente'])->group(function () {
         Route::get('/historial', [PacienteController::class, 'historial'])->name('paciente.historial');

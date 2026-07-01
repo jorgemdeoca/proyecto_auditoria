@@ -9,7 +9,7 @@ use App\Models\AuditoriaHistoriaBase;
 
 class HistoriaClinicaBase extends Model
 {
-    use HasFactory, \App\Traits\ScopedByConsultorio;
+    use HasFactory, \App\Traits\ScopedByConsultorio, \App\Traits\HasAuditTrail;
 
     protected $table = 'historia_clinica_base';
     protected $primaryKey = 'id';
