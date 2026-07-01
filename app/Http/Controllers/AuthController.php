@@ -89,11 +89,12 @@ class AuthController extends Controller
 
         // Verificar contraseña
         if ($usuario->password !== $passwordHash) {
-            // Implementar rate limiting por intentos fallidos
-            $sessionKey = "login_attempts_{$usuario->id}";
-            $attempts = session($sessionKey, 0) + 1;
-            session([$sessionKey => $attempts]);
-            
+            // Rate limiting por intentos fallidos usando BD (persistente)
+            $usuario->increment('failed_login_count');
+            $usuario->update(['last_failed_at' => now()]);
+
+            $attempts = $usuario->failed_login_count;
+
             // Bloquear cuenta tras 5 intentos fallidos
             if ($attempts >= 5) {
                 $blockedUntil = now()->addMinutes(15);
@@ -102,9 +103,7 @@ class AuthController extends Controller
                     'blocked_until' => $blockedUntil,
                     'lock_reason' => 'Múltiples intentos fallidos de inicio de sesión'
                 ]);
-                
-                session()->forget($sessionKey);
-                
+
                 // Enviar notificación de bloqueo
                 try {
                     $usuario->notify(new AccountLockedNotification([
@@ -115,7 +114,7 @@ class AuthController extends Controller
                 } catch (\Exception $e) {
                     Log::error('Error enviando notificación de bloqueo: ' . $e->getMessage());
                 }
-                
+
                 Log::warning('Account locked due to failed login attempts', [
                     'user_id' => $usuario->id,
                     'email' => $usuario->correo,
@@ -126,15 +125,15 @@ class AuthController extends Controller
                     ->withErrors(['correo' => "Cuenta bloqueada por seguridad hasta las {$blockedUntil->format('H:i')}. Demasiados intentos fallidos."])
                     ->withInput();
             }
-            
+
             $remaining = 5 - $attempts;
             return redirect()->back()
                 ->withErrors(['password' => "Contraseña inválida. {$remaining} intento(s) restante(s)."])
                 ->withInput();
         }
-        
+
         // Limpiar intentos fallidos en login exitoso
-        session()->forget("login_attempts_{$usuario->id}");
+        $usuario->update(['failed_login_count' => 0, 'last_failed_at' => null]);
 
         // VALIDACIÓN DE ACCESO POR PORTAL CORRECTO
         $mapaRoles = [
