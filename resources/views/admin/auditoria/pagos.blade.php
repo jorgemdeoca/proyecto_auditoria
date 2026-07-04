@@ -66,9 +66,16 @@
                                     'deleted' => 'bg-rose-100 text-rose-700',
                                     default   => 'bg-gray-100 text-gray-600',
                                 };
+                                $eventName = match($reg->event) {
+                                    'created' => 'Creado',
+                                    'updated' => 'Modificado',
+                                    'deleted' => 'Eliminado',
+                                    'payment_state_changed' => 'Estado Modificado',
+                                    default => ucfirst($reg->event),
+                                };
                             @endphp
                             <span class="inline-flex px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $badgeClass }}">
-                                {{ ucfirst($reg->event) }}
+                                {{ $eventName }}
                             </span>
                         </td>
                         <td class="px-4 py-3">
@@ -80,7 +87,7 @@
                             @if($reg->new_values)
                                 <details class="cursor-pointer">
                                     <summary class="text-xs text-blue-500 hover:underline select-none">Ver valores</summary>
-                                    <pre class="mt-1 text-[10px] bg-gray-50 dark:bg-gray-900 p-2 rounded text-gray-600 dark:text-gray-400 overflow-auto max-h-24">{{ json_encode(json_decode($reg->new_values), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                    <pre class="mt-1 text-[10px] bg-gray-50 dark:bg-gray-900 p-2 rounded text-gray-600 dark:text-gray-400 overflow-auto max-h-24">{{ json_encode($reg->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                 </details>
                             @else
                                 <span class="text-xs text-gray-300">—</span>

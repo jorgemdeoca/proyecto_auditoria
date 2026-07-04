@@ -72,9 +72,16 @@
                                     'state_changed'=> 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
                                     default        => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
                                 };
+                                $eventName = match($reg->event) {
+                                    'created' => 'Creado',
+                                    'updated' => 'Modificado',
+                                    'deleted' => 'Eliminado',
+                                    'state_changed' => 'Cambio de Estado',
+                                    default => ucfirst($reg->event),
+                                };
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $badgeClass }}">
-                                {{ ucfirst($reg->event) }}
+                                {{ $eventName }}
                             </span>
                         </td>
                         <td class="px-4 py-3">
@@ -86,7 +93,7 @@
                             @if($reg->old_values)
                                 <details class="cursor-pointer">
                                     <summary class="text-xs text-blue-500 hover:underline select-none">Ver cambio</summary>
-                                    <pre class="mt-1 text-[10px] bg-gray-50 dark:bg-gray-900 p-2 rounded text-gray-600 dark:text-gray-400 overflow-auto max-h-24">{{ json_encode(json_decode($reg->old_values), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                    <pre class="mt-1 text-[10px] bg-gray-50 dark:bg-gray-900 p-2 rounded text-gray-600 dark:text-gray-400 overflow-auto max-h-24">{{ json_encode($reg->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                 </details>
                             @else
                                 <span class="text-xs text-gray-300">—</span>
