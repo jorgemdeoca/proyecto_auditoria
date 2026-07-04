@@ -100,6 +100,18 @@
         </a>
     </div>
 
+    {{-- Tendencia del Sistema (Gráfica) --}}
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                <i class="bi bi-graph-up text-emerald-500"></i> Tendencia de Actividad (Últimos 7 días)
+            </h2>
+        </div>
+        <div class="relative h-64 w-full">
+            <canvas id="tendenciaChart"></canvas>
+        </div>
+    </div>
+
     {{-- Dos columnas: Últimos eventos + Auth logs recientes --}}
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
@@ -198,4 +210,74 @@
 
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('tendenciaChart');
+    if (!ctx) return;
+
+    const chartData = @json($chartData ?? ['labels' => [], 'data' => []]);
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const textColor = isDarkMode ? '#9ca3af' : '#6b7280';
+    const gridColor = isDarkMode ? '#374151' : '#f3f4f6';
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chartData.labels,
+            datasets: [{
+                label: 'Eventos Auditados',
+                data: chartData.data,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: isDarkMode ? '#1f2937' : '#fff',
+                    titleColor: isDarkMode ? '#fff' : '#111827',
+                    bodyColor: isDarkMode ? '#d1d5db' : '#4b5563',
+                    borderColor: isDarkMode ? '#374151' : '#e5e7eb',
+                    borderWidth: 1,
+                    padding: 10,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.parsed.y + ' eventos registrados';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor, font: { size: 11 } }
+                },
+                y: {
+                    grid: { color: gridColor },
+                    ticks: { color: textColor, font: { size: 11 }, precision: 0 },
+                    beginAtZero: true
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index',
+            },
+        }
+    });
+});
+</script>
 @endsection

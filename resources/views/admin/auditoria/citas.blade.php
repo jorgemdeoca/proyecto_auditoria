@@ -35,7 +35,7 @@
     ])
 
     {{-- Tabla --}}
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+    <div id="table-container" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div class="px-5 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 {{ number_format($registros->total()) }} registros encontrados
@@ -50,7 +50,7 @@
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Evento</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Realizado por</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">IP</th>
-                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Valores Anteriores</th>
+                        <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Detalles</th>
                         <th class="px-4 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fecha</th>
                     </tr>
                 </thead>
@@ -89,12 +89,13 @@
                             <p class="text-[10px] text-gray-400">{{ $reg->causer_rol ?? '' }}</p>
                         </td>
                         <td class="px-4 py-3 text-xs font-mono text-gray-400">{{ $reg->ip_address ?? '-' }}</td>
-                        <td class="px-4 py-3 max-w-xs">
-                            @if($reg->old_values)
-                                <details class="cursor-pointer">
-                                    <summary class="text-xs text-blue-500 hover:underline select-none">Ver cambio</summary>
-                                    <pre class="mt-1 text-[10px] bg-gray-50 dark:bg-gray-900 p-2 rounded text-gray-600 dark:text-gray-400 overflow-auto max-h-24">{{ json_encode($reg->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                                </details>
+                        <td class="px-4 py-3 text-center">
+                            @if($reg->old_values || $reg->new_values)
+                                <button type="button" 
+                                    onclick="openDiffModal('{{ addslashes(json_encode($reg->old_values)) }}', '{{ addslashes(json_encode($reg->new_values)) }}')"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-semibold transition-colors border border-blue-200">
+                                    <i class="bi bi-file-diff"></i> Ver Diferencias
+                                </button>
                             @else
                                 <span class="text-xs text-gray-300">—</span>
                             @endif
@@ -122,4 +123,6 @@
         @endif
     </div>
 </div>
+
+@include('admin.auditoria.partials._diff_modal')
 @endsection
