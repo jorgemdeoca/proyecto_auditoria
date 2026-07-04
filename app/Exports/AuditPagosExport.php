@@ -3,8 +3,12 @@
 namespace App\Exports;
 
 use App\Models\AuditLog;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AuditPagosExport
+class AuditPagosExport implements FromArray, WithHeadings, WithStyles
 {
     public function __construct(private array $filtros = []) {}
 
@@ -16,7 +20,7 @@ class AuditPagosExport
         ];
     }
 
-    public function rows(): array
+    public function array(): array
     {
         $query = AuditLog::delModulo('pagos')->latest('created_at');
 
@@ -32,17 +36,24 @@ class AuditPagosExport
                 $row->id,
                 class_basename($row->auditable_type),
                 $row->auditable_id,
-                strtoupper($row->event),
+                strtoupper($row->event_translated),
                 $row->causer_nombre ?? 'Sistema',
-                $row->causer_rol ?? '-',
+                $row->causer_rol,
                 $row->ip_address ?? '-',
-                $row->old_values ? json_encode(json_decode($row->old_values), JSON_UNESCAPED_UNICODE) : '-',
-                $row->new_values ? json_encode(json_decode($row->new_values), JSON_UNESCAPED_UNICODE) : '-',
+                \App\Models\AuditLog::formatValues($row->old_values),
+                \App\Models\AuditLog::formatValues($row->new_values),
                 $row->created_at?->format('d/m/Y H:i:s'),
             ];
         })->toArray();
     }
 
-    public function sheetTitle(): string { return 'Auditoría Pagos'; }
-    public function filename(): string   { return 'auditoria_pagos_' . now()->format('Ymd_His'); }
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['argb' => 'FF3B82F6']]
+            ],
+        ];
+    }
 }

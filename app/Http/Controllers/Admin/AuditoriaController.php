@@ -171,54 +171,24 @@ class AuditoriaController extends Controller
         return view('admin.auditoria.auth_logs', compact('registros'));
     }
 
-    // ── Exportaciones Excel (maatwebsite/excel v1.x) ─────────────────────────
+    // ── Exportaciones Excel (maatwebsite/excel v3.x) ─────────────────────────
 
     public function exportarCitasExcel(Request $request)
     {
         $exp = new \App\Exports\AuditCitasExport($request->all());
-        return Excel::create($exp->filename(), function ($excel) use ($exp) {
-            $excel->sheet($exp->sheetTitle(), function ($sheet) use ($exp) {
-                $sheet->fromArray(array_merge([$exp->headings()], $exp->rows()),
-                    null, 'A1', false, false);
-                $sheet->row(1, function ($row) {
-                    $row->setFontWeight('bold');
-                    $row->setBackground('#10b981');
-                    $row->setFontColor('#ffffff');
-                });
-            });
-        })->download('xlsx');
+        return \Maatwebsite\Excel\Facades\Excel::download($exp, 'auditoria_citas_' . now()->format('Ymd_His') . '.xlsx');
     }
 
     public function exportarPagosExcel(Request $request)
     {
         $exp = new \App\Exports\AuditPagosExport($request->all());
-        return Excel::create($exp->filename(), function ($excel) use ($exp) {
-            $excel->sheet($exp->sheetTitle(), function ($sheet) use ($exp) {
-                $sheet->fromArray(array_merge([$exp->headings()], $exp->rows()),
-                    null, 'A1', false, false);
-                $sheet->row(1, function ($row) {
-                    $row->setFontWeight('bold');
-                    $row->setBackground('#3b82f6');
-                    $row->setFontColor('#ffffff');
-                });
-            });
-        })->download('xlsx');
+        return \Maatwebsite\Excel\Facades\Excel::download($exp, 'auditoria_pagos_' . now()->format('Ymd_His') . '.xlsx');
     }
 
     public function exportarAuthExcel(Request $request)
     {
         $exp = new \App\Exports\AuditAuthExport($request->all());
-        return Excel::create($exp->filename(), function ($excel) use ($exp) {
-            $excel->sheet($exp->sheetTitle(), function ($sheet) use ($exp) {
-                $sheet->fromArray(array_merge([$exp->headings()], $exp->rows()),
-                    null, 'A1', false, false);
-                $sheet->row(1, function ($row) {
-                    $row->setFontWeight('bold');
-                    $row->setBackground('#f59e0b');
-                    $row->setFontColor('#ffffff');
-                });
-            });
-        })->download('xlsx');
+        return \Maatwebsite\Excel\Facades\Excel::download($exp, 'auditoria_accesos_' . now()->format('Ymd_His') . '.xlsx');
     }
 
     // ── Exportaciones PDF ─────────────────────────────────────────────────────

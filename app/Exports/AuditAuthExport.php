@@ -3,8 +3,12 @@
 namespace App\Exports;
 
 use App\Models\AuthLog;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class AuditAuthExport
+class AuditAuthExport implements FromArray, WithHeadings, WithStyles
 {
     public function __construct(private array $filtros = []) {}
 
@@ -13,7 +17,7 @@ class AuditAuthExport
         return ['ID', 'Usuario ID', 'Correo', 'Evento', 'IP', 'Navegador', 'Fecha'];
     }
 
-    public function rows(): array
+    public function array(): array
     {
         $query = AuthLog::latest('created_at');
 
@@ -40,6 +44,13 @@ class AuditAuthExport
         })->toArray();
     }
 
-    public function sheetTitle(): string { return 'Log de Accesos'; }
-    public function filename(): string   { return 'auditoria_accesos_' . now()->format('Ymd_His'); }
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => [
+                'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+                'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['argb' => 'FFF59E0B']]
+            ],
+        ];
+    }
 }

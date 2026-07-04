@@ -8,7 +8,9 @@ use Illuminate\Notifications\Notifiable;
 
 class Paciente extends Model
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \App\Traits\HasAuditTrail;
+
+    protected string $auditModulo = 'pacientes';
 
     protected $table = 'pacientes';
     protected $primaryKey = 'id';

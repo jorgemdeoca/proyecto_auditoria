@@ -126,7 +126,18 @@
                         <p class="text-sm text-gray-800 dark:text-gray-200 truncate">
                             <span class="font-medium">{{ class_basename($evento->auditable_type) }} #{{ $evento->auditable_id }}</span>
                             <span class="text-gray-400 mx-1">·</span>
-                            <span class="capitalize">{{ $evento->event }}</span>
+                            @php
+                                $eventName = match($evento->event) {
+                                    'created' => 'Creado',
+                                    'updated' => 'Modificado',
+                                    'deleted' => 'Eliminado',
+                                    'state_changed' => 'Cambio de Estado (Cita)',
+                                    'payment_state_changed' => 'Cambio de Estado (Pago)',
+                                    'invoice_state_changed' => 'Cambio de Estado (Factura)',
+                                    default => ucfirst($evento->event),
+                                };
+                            @endphp
+                            <span class="capitalize">{{ $eventName }}</span>
                         </p>
                         <p class="text-xs text-gray-400 mt-0.5">
                             {{ $evento->causer_nombre ?? 'Sistema' }} · {{ $evento->created_at->diffForHumans() }}
@@ -185,37 +196,6 @@
         </div>
     </div>
 
-    {{-- Accesos rápidos a sub-módulos --}}
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <a href="{{ route('admin.auditoria.citas') }}"
-            class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-emerald-400 dark:hover:border-emerald-600 shadow-sm transition-all group">
-            <i class="bi bi-calendar2-check text-2xl text-emerald-500"></i>
-            <div><p class="font-semibold text-sm text-gray-800 dark:text-white">Auditoría de Citas</p>
-                <p class="text-[11px] text-gray-400">Ver trazas</p></div>
-            <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-emerald-500 transition-colors"></i>
-        </a>
-        <a href="{{ route('admin.auditoria.pagos') }}"
-            class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-600 shadow-sm transition-all group">
-            <i class="bi bi-cash-stack text-2xl text-blue-500"></i>
-            <div><p class="font-semibold text-sm text-gray-800 dark:text-white">Auditoría de Pagos</p>
-                <p class="text-[11px] text-gray-400">Ver trazas</p></div>
-            <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-blue-500 transition-colors"></i>
-        </a>
-        <a href="{{ route('admin.auditoria.acceso-medico') }}"
-            class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-teal-400 dark:hover:border-teal-600 shadow-sm transition-all group">
-            <i class="bi bi-file-earmark-person text-2xl text-teal-500"></i>
-            <div><p class="font-semibold text-sm text-gray-800 dark:text-white">Acceso a Historias</p>
-                <p class="text-[11px] text-gray-400">Quién accedió</p></div>
-            <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-teal-500 transition-colors"></i>
-        </a>
-        <a href="{{ route('admin.auditoria.auth-logs') }}"
-            class="flex items-center gap-3 p-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-amber-400 dark:hover:border-amber-600 shadow-sm transition-all group">
-            <i class="bi bi-key-fill text-2xl text-amber-500"></i>
-            <div><p class="font-semibold text-sm text-gray-800 dark:text-white">Log de Accesos</p>
-                <p class="text-[11px] text-gray-400">Login / Logout</p></div>
-            <i class="bi bi-chevron-right ml-auto text-gray-300 group-hover:text-amber-500 transition-colors"></i>
-        </a>
-    </div>
 
 </div>
 @endsection

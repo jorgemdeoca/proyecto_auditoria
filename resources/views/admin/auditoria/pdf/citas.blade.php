@@ -55,14 +55,14 @@
                 <td>#{{ $reg->auditable_id }}</td>
                 <td>
                     @php $cls = match($reg->event) { 'created' => 'created', 'updated' => 'updated', 'deleted' => 'deleted', default => 'state' }; @endphp
-                    <span class="badge badge-{{ $cls }}">{{ ucfirst($reg->event) }}</span>
+                    <span class="badge badge-{{ $cls }}">{{ $reg->event_translated }}</span>
                 </td>
                 <td>{{ $reg->causer_nombre ?? 'Sistema' }}</td>
-                <td>{{ $reg->causer_rol ?? '-' }}</td>
+                <td>{{ $reg->causer_rol }}</td>
                 <td>{{ $reg->ip_address ?? '-' }}</td>
                 <td>
                     @if($reg->old_values)
-                        <div class="pre">{{ substr(json_encode(json_decode($reg->old_values), JSON_UNESCAPED_UNICODE), 0, 120) }}</div>
+                        <div class="pre">{{ \App\Models\AuditLog::formatValues($reg->old_values) }}</div>
                     @else — @endif
                 </td>
                 <td>{{ $reg->created_at->format('d/m/Y H:i') }}</td>
