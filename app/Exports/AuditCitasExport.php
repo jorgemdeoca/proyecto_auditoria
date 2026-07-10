@@ -26,9 +26,18 @@ class AuditCitasExport implements FromArray, WithHeadings, WithStyles
 
         if (!empty($this->filtros['desde']) && !empty($this->filtros['hasta'])) {
             $query->enRango($this->filtros['desde'], $this->filtros['hasta']);
+        } elseif (!empty($this->filtros['desde'])) {
+            $query->whereDate('created_at', '>=', $this->filtros['desde']);
+        } elseif (!empty($this->filtros['hasta'])) {
+            $query->whereDate('created_at', '<=', $this->filtros['hasta']);
         }
+
         if (!empty($this->filtros['evento'])) {
             $query->where('event', $this->filtros['evento']);
+        }
+
+        if (!empty($this->filtros['registro_id'])) {
+            $query->where('auditable_id', $this->filtros['registro_id']);
         }
 
         return $query->limit(5000)->get()->map(function ($row) {

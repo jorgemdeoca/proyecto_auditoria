@@ -119,6 +119,37 @@ class HistoriaClinicaController extends Controller
         if ($user->rol_id == 1) {
             abort(403, 'Los administradores no tienen acceso a historias clínicas.');
         }
+
+        // --- INICIO: Restricciones de Contexto (Geo & Time) para Seguridad Avanzada ---
+        $hour = (int) now()->format('G');
+        if ($hour >= 1 && $hour <= 5) {
+            $ip = request()->ip();
+            if ($ip === '127.0.0.1' || $ip === '::1') {
+                $country = 'Local';
+            } else {
+                $position = \Stevebauman\Location\Facades\Location::get($ip);
+                $country = $position ? $position->countryName : 'Desconocido';
+            }
+            
+            if ($country !== 'Venezuela' && $country !== 'Local') {
+                \App\Models\AuditLog::create([
+                    'auditable_type' => 'App\Models\HistoriaClinicaBase',
+                    'auditable_id' => $pacienteId,
+                    'event' => 'SECURITY_ALERT',
+                    'url' => request()->fullUrl(),
+                    'ip_address' => $ip,
+                    'user_agent' => request()->userAgent(),
+                    'causer_type' => 'App\Models\Usuario',
+                    'causer_id' => $user->id,
+                    'old_values' => ['alerta' => 'Acceso bloqueado: Madrugada + IP Extranjera'],
+                    'new_values' => ['country' => $country, 'hora' => $hour],
+                    'created_at' => now(),
+                    'modulo' => 'historia_clinica'
+                ]);
+                abort(403, 'ACCESO DENEGADO: Intento de acceso inusual bloqueado por políticas de seguridad.');
+            }
+        }
+        // --- FIN: Restricciones de Contexto ---
         
         $paciente = Paciente::with(['historiaClinicaBase', 'usuario'])->findOrFail($pacienteId);
         $historia = $paciente->historiaClinicaBase;

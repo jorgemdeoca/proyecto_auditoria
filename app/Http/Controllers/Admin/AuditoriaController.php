@@ -77,6 +77,22 @@ class AuditoriaController extends Controller
         $ultimosEventos = AuditLog::latest('created_at')->limit(10)->get();
         $ultimosAuthLogs = AuthLog::latest('created_at')->limit(8)->get();
 
+        // Gráfica de Tendencias (Últimos 7 días)
+        $dias = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $dias->push(now()->subDays($i)->format('Y-m-d'));
+        }
+
+        $eventosPorDia = AuditLog::selectRaw('DATE(created_at) as date, COUNT(*) as count')
+            ->whereDate('created_at', '>=', now()->subDays(6))
+            ->groupBy('date')
+            ->pluck('count', 'date');
+
+        $chartData = [
+            'labels' => $dias->map(fn($d) => \Carbon\Carbon::parse($d)->format('d M'))->toArray(),
+            'data' => $dias->map(fn($d) => $eventosPorDia->get($d, 0))->toArray()
+        ];
+
         return view('admin.auditoria.index', compact(
             'totalEventosCitas',
             'totalEventosPagos',
@@ -85,7 +101,8 @@ class AuditoriaController extends Controller
             'totalLecturasHistorias',
             'ultimosEventos',
             'ultimosAuthLogs',
-            'isRoot'
+            'isRoot',
+            'chartData'
         ));
     }
 
@@ -111,6 +128,10 @@ class AuditoriaController extends Controller
             $query->where('event', $request->evento);
         }
 
+        if ($request->filled('registro_id')) {
+            $query->where('auditable_id', $request->registro_id);
+        }
+
         $registros = $query->paginate(20)->withQueryString();
 
         return view('admin.auditoria.citas', compact('registros'));
@@ -126,6 +147,10 @@ class AuditoriaController extends Controller
 
         if ($request->filled('evento')) {
             $query->where('event', $request->evento);
+        }
+
+        if ($request->filled('registro_id')) {
+            $query->where('auditable_id', $request->registro_id);
         }
 
         $registros = $query->paginate(20)->withQueryString();
@@ -205,6 +230,15 @@ class AuditoriaController extends Controller
                   ->whereIn('auditable_id', $citaIds);
         }
         $this->aplicarFiltrosFecha($query, $request);
+
+        if ($request->filled('evento')) {
+            $query->where('event', $request->evento);
+        }
+
+        if ($request->filled('registro_id')) {
+            $query->where('auditable_id', $request->registro_id);
+        }
+
         $registros = $query->limit(500)->get();
 
         $pdf = Pdf::loadView('admin.auditoria.pdf.citas', compact('registros'))
@@ -217,6 +251,15 @@ class AuditoriaController extends Controller
     {
         $query = AuditLog::delModulo('pagos')->latest('created_at');
         $this->aplicarFiltrosFecha($query, $request);
+
+        if ($request->filled('evento')) {
+            $query->where('event', $request->evento);
+        }
+
+        if ($request->filled('registro_id')) {
+            $query->where('auditable_id', $request->registro_id);
+        }
+
         $registros = $query->limit(500)->get();
 
         $pdf = Pdf::loadView('admin.auditoria.pdf.pagos', compact('registros'))
