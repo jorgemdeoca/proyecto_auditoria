@@ -23,6 +23,10 @@ class AuditAuthExport implements FromArray, WithHeadings, WithStyles
 
         if (!empty($this->filtros['desde']) && !empty($this->filtros['hasta'])) {
             $query->enRango($this->filtros['desde'], $this->filtros['hasta']);
+        } elseif (!empty($this->filtros['desde'])) {
+            $query->whereDate('created_at', '>=', $this->filtros['desde']);
+        } elseif (!empty($this->filtros['hasta'])) {
+            $query->whereDate('created_at', '<=', $this->filtros['hasta']);
         }
         if (!empty($this->filtros['evento'])) {
             $query->porEvento($this->filtros['evento']);

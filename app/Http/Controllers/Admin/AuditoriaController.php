@@ -230,6 +230,15 @@ class AuditoriaController extends Controller
                   ->whereIn('auditable_id', $citaIds);
         }
         $this->aplicarFiltrosFecha($query, $request);
+
+        if ($request->filled('evento')) {
+            $query->where('event', $request->evento);
+        }
+
+        if ($request->filled('registro_id')) {
+            $query->where('auditable_id', $request->registro_id);
+        }
+
         $registros = $query->limit(500)->get();
 
         $pdf = Pdf::loadView('admin.auditoria.pdf.citas', compact('registros'))
@@ -242,6 +251,15 @@ class AuditoriaController extends Controller
     {
         $query = AuditLog::delModulo('pagos')->latest('created_at');
         $this->aplicarFiltrosFecha($query, $request);
+
+        if ($request->filled('evento')) {
+            $query->where('event', $request->evento);
+        }
+
+        if ($request->filled('registro_id')) {
+            $query->where('auditable_id', $request->registro_id);
+        }
+
         $registros = $query->limit(500)->get();
 
         $pdf = Pdf::loadView('admin.auditoria.pdf.pagos', compact('registros'))
